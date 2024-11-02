@@ -1,61 +1,73 @@
 [
     {
-        "title": "Lorem ipsum dolor sit.",
-        "image": "https://vis-society.github.io/labs/2/images/empty.svg",
-        "description": "Lorem ipsum dolor sit amet consectetur adipisicing elit. Provident ea ratione velit neque fugit? Reprehenderit quisquam inventore id maiores facere neque quae error, ipsa distinctio quod, ullam numquam unde voluptatibus?"
+        "title": "Maplestory Marketplace",
+        "year": "2024",
+        "image": "https://g.nexonstatic.com/maplestory/micro-site/static/landing/share_fb.jpg",
+        "description": "A fair and ethical marketplace system for the video game Maplestory, addressing issues like unfair trades and market manipulation. Leveraging historical data and market trends, the system suggests fair prices, promotes transparent trading, and includes a reputation system for reliable service exchange."
     },
     {
-        "title": "Rerum quae totam magni!",
-        "image": "https://vis-society.github.io/labs/2/images/empty.svg",
-        "description": "Aliquid voluptatem molestiae fugit explicabo consequatur maxime placeat. Porro similique vero ducimus corrupti nobis optio libero adipisci, rem quisquam laborum vitae harum voluptatem eveniet minus nemo possimus quia tenetur aliquid."
+        "title": "Dressing Up My Virtual Friends: An ACNH Clothing Recommender",
+        "year": "2023",
+        "image": "https://media.distractify.com/brand-img/YowNFwdxg/0x0/animal-crossing-new-game-1694707555443.jpg",
+        "description": "A clothing recommendation system for Animal Crossing: New Horizons (ACNH) to help players gift items matching each villager's style preferences. Using datasets detailing villager attributes and clothing items, the system suggests outfits to enhance in-game friendships."
     },
     {
-        "title": "Vitae incidunt non reprehenderit?",
-        "image": "https://vis-society.github.io/labs/2/images/empty.svg",
-        "description": "Placeat reiciendis enim asperiores non facere debitis doloribus omnis esse beatae sapiente vitae facilis deserunt, consequuntur delectus, aliquid voluptate fuga in. Ipsam provident autem, blanditiis et quam tempora cupiditate dolorem?"
+        "title": "Detecting Anomalies in Solar Power Generation",
+        "year": "2024",
+        "image": "https://storage.googleapis.com/kaggle-datasets-images/836676/1428586/bcf66096627661f1a0ef2e58256a1364/dataset-cover.jpg?t=2020-08-18-16-01-57",
+        "description": "Anomaly detection system for solar power generation using a time-series dataset with over 2.6 billion rows from 20,000 solar PV systems in the UK. Utilizing PySpark, this project identifies outliers in power generation, aiding companies in maintaining efficient and sustainable energy output."
     },
     {
-        "title": "Harum eos soluta repellat!",
-        "image": "https://vis-society.github.io/labs/2/images/empty.svg",
-        "description": "Ipsa, rem? Voluptates perferendis officiis neque quam officia ipsa similique id, eos nesciunt fuga ullam. Maiores laboriosam, harum accusantium laborum, perferendis consequuntur deleniti eos exercitationem atque animi quaerat voluptatem ipsum."
+        "title": "Discord Bot",
+        "year": "2020",
+        "image": "https://graphicsprings.com/wp-content/uploads/2023/08/image-29.png",
+        "description": "Discord bot using JavaScript, including functionalities such as polls, calendars, scheduling, reminders, and image generation to facilitate classmate activities."
     },
     {
         "title": "Beatae, vitae. Modi, ratione.",
+        "year": "2021",
         "image": "https://vis-society.github.io/labs/2/images/empty.svg",
         "description": "Eos, nemo voluptate mollitia natus magni culpa asperiores quaerat, laborum dolorem dolor excepturi sed cumque dolores ea placeat? Eaque, non sed quam repellendus nihil ab excepturi earum minus commodi consequuntur."
     },
     {
         "title": "Expedita quaerat non ut.",
+        "year": "2022",
         "image": "https://vis-society.github.io/labs/2/images/empty.svg",
         "description": "Modi iste eum, a delectus soluta optio nam corporis? Consequatur impedit minima facere alias labore? Autem excepturi maiores exercitationem, velit omnis fuga nam repellat hic itaque voluptatem officiis magnam quis."
     },
     {
         "title": "Inventore recusandae officiis cupiditate.",
+        "year": "2020",
         "image": "https://vis-society.github.io/labs/2/images/empty.svg",
         "description": "Placeat impedit, totam aliquam ipsam maxime pariatur ut minus accusamus fugiat explicabo nulla vero! Sit fugit blanditiis praesentium accusantium tempora provident quasi? Debitis rerum, quo impedit itaque ratione facilis dicta?"
     },
     {
         "title": "Quis minus ullam eveniet.",
+        "year": "2023",
         "image": "https://vis-society.github.io/labs/2/images/empty.svg",
         "description": "Temporibus expedita similique laboriosam distinctio ducimus dolorum nesciunt unde quo optio amet. Aut necessitatibus impedit quasi. Voluptates mollitia vel reprehenderit provident consectetur maxime ex, modi error, nisi hic ullam quis."
     },
     {
         "title": "Sit totam aperiam praesentium.",
+        "year": "2021",
         "image": "https://vis-society.github.io/labs/2/images/empty.svg",
         "description": "Quis hic nobis architecto sapiente exercitationem ab consectetur velit laboriosam unde modi quaerat aliquid, doloribus, doloremque quibusdam fugit necessitatibus inventore sit vitae libero totam. Adipisci alias libero aut voluptatibus debitis?"
     },
     {
         "title": "Minima cumque repellat quae!",
+        "year": "2022",
         "image": "https://vis-society.github.io/labs/2/images/empty.svg",
         "description": "Eius sit quia earum laboriosam maiores perferendis, placeat excepturi saepe neque at beatae quis veritatis deserunt? Incidunt quo placeat eligendi commodi aliquam exercitationem, sunt beatae, officiis eveniet voluptatem at! Necessitatibus!"
     },
     {
         "title": "Corrupti dolores sed ut.",
+        "year": "2023",
         "image": "https://vis-society.github.io/labs/2/images/empty.svg",
         "description": "Eaque odio possimus veniam suscipit cumque cum, quos delectus et velit corporis quod sequi distinctio nemo iusto vitae pariatur maxime ex eligendi doloribus? Inventore unde reiciendis blanditiis laborum maiores exercitationem."
     },
     {
         "title": "In excepturi eveniet illum?",
+        "year": "2020",
         "image": "https://vis-society.github.io/labs/2/images/empty.svg",
         "description": "Maiores beatae illum aut natus obcaecati fuga distinctio, exercitationem harum molestiae, odio tenetur necessitatibus minus voluptate recusandae praesentium, itaque quisquam magnam facere omnis. Aperiam odit eius sed illum assumenda ad."
     }

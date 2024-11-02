@@ -5,7 +5,7 @@
 
 <article>
     <svelte:element this={'h' + hLevel}>{data.title}</svelte:element>
-    <img src={data.image} alt="{data.title}" />
+    <img src={data.image} alt="{data.title}" class="project-image" />
     <p>{data.description}</p>
 </article>
 
@@ -19,4 +19,10 @@
   h3 {
     margin-bottom: 0em;
   }
+
+  .project-image {
+        max-width: 100%;
+        width: 277px;
+        height: 138px;
+    }
 </style>

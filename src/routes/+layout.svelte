@@ -9,6 +9,12 @@
       { url: './cv', title: 'CV' },
       { url: 'https://github.com/yepzoey', title: 'GitHub' }
     ];
+
+    let colorScheme = globalThis.localStorage?.colorScheme ?? 'light dark';
+    let root = globalThis?.document?.documentElement;
+
+    $: root?.style.setProperty('color-scheme', colorScheme);
+    $: globalThis.localStorage?.setItem('colorScheme', colorScheme);
   </script>
   
   <nav>
@@ -19,6 +25,15 @@
       </a>
     {/each}
   </nav>
+
+  <label class="color-scheme">
+    Theme:
+    <select bind:value={colorScheme}>
+        <option value="light dark">Automatic</option>
+        <option value="light">Light</option>
+        <option value="dark">Dark</option>
+    </select>
+  </label>
   
   <slot />
   <style>
@@ -45,5 +60,13 @@
     nav a:hover {
         border-bottom: 0.4em solid var(--color-accent);
         background-color: color-mix(in oklch, var(--color-accent), canvas 85%);
+    }
+
+    .color-scheme {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        font-size: 0.8rem;
+        font-family: inherit;
     }
   </style>

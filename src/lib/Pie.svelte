@@ -92,6 +92,7 @@
         margin-block: 1em;
         overflow: visible;
         min-width: 15em;
+        margin-bottom: 2em;
     }
 
     svg:has(path:hover, path:focus-visible) {

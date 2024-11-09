@@ -139,6 +139,7 @@
         border-radius: 8px;
         background-color: #f9f9f9;
         min-width: 8em;
+        margin-left: 1em;
     }
     .legend li {
         display: flex;

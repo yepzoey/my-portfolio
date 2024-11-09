@@ -6,7 +6,10 @@
 <article>
     <svelte:element this={'h' + hLevel}>{data.title}</svelte:element>
     <img src={data.image} alt="{data.title}" class="project-image" />
-    <p>{data.description}</p>
+    <div>
+        <p>{data.description}</p>
+        <p style="font-style: italic; color:darkgrey">{data.year}</p>
+    </div>
 </article>
 
 <style>

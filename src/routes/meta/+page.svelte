@@ -1,3 +1,7 @@
+<svelte:head>
+  <title>Meta - Zoey Zhao</title>
+</svelte:head>
+
 <script>
     import * as d3 from 'd3';
     import { onMount } from 'svelte';

@@ -48,34 +48,4 @@
       justify-content: center;
       margin-top: 1rem;
   }
-
-  section {
-    text-align: left;
-    margin-top: 2rem;
-    margin-bottom: 2rem;
-  }
-
-  .stats {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    grid-template-rows: auto auto;
-    gap: 0.5rem;
-    text-align: left;
-    max-width: 800px;
-  }
-
-  dt {
-    font-size: 0.75rem;
-    color: color-mix(in srgb, GrayText 90%, Canvas 5%);
-    text-transform: uppercase;
-    grid-row: 1;
-  }
-
-  dd {
-    font-size: 2rem;
-    margin: 0;
-    color: #000;
-    grid-row: 2;
-    color: inherit;
-  }
 </style>

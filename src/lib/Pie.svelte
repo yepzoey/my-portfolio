@@ -81,7 +81,7 @@
         align-items: center;
         gap: 2em;
         max-width: 100%;
-        margin: 0 auto;
+        margin: 2em auto;
         padding: 0em;
         min-width: 5em;
     }

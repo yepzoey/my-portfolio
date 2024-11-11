@@ -57,7 +57,6 @@ input[type="search"] {
     width: 100%;
     max-width: 400px;
     padding: 0.75em 1em;
-    margin-top: 1em;
     margin-bottom: 1.5em;
     font-size: 1em;
     border: 1px solid #ddd;

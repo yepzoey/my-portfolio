@@ -102,7 +102,7 @@
             .nice();
 
         colorScale = d3.scaleSequential(d3.interpolatePlasma)
-            .domain([0, 24]);
+            .domain([24, 0]);
     }
 
     $: if (xScale && yScale) {

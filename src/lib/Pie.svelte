@@ -3,17 +3,31 @@
 
     export let data = [];
     export let selectedIndex = -1;
+    export let colors = d3.scaleOrdinal(d3.schemeTableau10);
+    export let transitionDuration = 500;
 
-    let colors = d3.scaleOrdinal(d3.schemeTableau10);
-
-    let arcData;
-    let arcs;
-
-    let sliceGenerator = d3.pie().value((d) => d.value);
-    $: arcData = sliceGenerator(data);
-
+    let pieData;
+    let sliceGenerator = d3.pie().value((d) => d.value).sort(null);
     let arcGenerator = d3.arc().innerRadius(0).outerRadius(50);
-    $: arcs = arcData.map(d => arcGenerator(d));
+
+    let wedges = {};
+    let oldData = [];
+
+    $: {
+        oldData = pieData;
+        pieData = d3.sort(data.map((d) => ({ ...d })), (d) => d.label);
+
+        let arcData = sliceGenerator(pieData);
+        let arcs = arcData.map((d) => arcGenerator(d));
+
+        pieData = pieData.map((d, i) => ({
+            ...d,
+            ...arcData[i],
+            arc: arcs[i],
+        }));
+
+        transitionArcs();
+    }
 
     function toggleWedge(index, event) {
         if (!event.key || event.key === 'Enter') {
@@ -22,27 +36,111 @@
     }
 
     function handleMouseEnter(index) {
-      arcs.forEach((_, i) => {
-          const path = document.getElementById(`path-${i}`);
-          path.style.opacity = i === index ? '1' : '0.5';
-      });
+        pieData.forEach((_, i) => {
+            const path = document.getElementById(`path-${i}`);
+            path.style.opacity = i === index ? '1' : '0.5';
+        });
     }
 
     function handleMouseLeave() {
-      arcs.forEach((_, i) => {
-          const path = document.getElementById(`path-${i}`);
-          path.style.opacity = '1';
-      });
+        pieData.forEach((_, i) => {
+            const path = document.getElementById(`path-${i}`);
+            path.style.opacity = '1';
+        });
     }
+
+    function transitionArcs() {
+        let wedgeElements = Object.values(wedges);
+
+        d3.selectAll(wedgeElements)
+            .transition('arc')
+            .duration(transitionDuration)
+            .styleTween('d', function (_, index) {
+                let label = Object.keys(wedges)[index];
+                let d = pieData.find((d) => d.label === label);
+                let d_old = oldData.find((d) => d.label === label);
+
+                if (!d || !d_old) {
+                    return;
+                }
+
+                let from = { ...d_old };
+                let to = { ...d };
+                let angleInterpolator = d3.interpolate(from, to);
+
+                return (t) => {
+                    return `path("${arcGenerator(angleInterpolator(t))}")`;
+                };
+            });
+    }
+
+    function transitionArc(wedge, label) {
+        label ??= Object.entries(wedges).find(([lbl, w]) => w === wedge)?.[0];
+        if (!label) return null;
+
+        let d = pieData.find((d) => d.label === label);
+        let d_old = oldData.find((d) => d.label === label);
+
+        let from = d_old ? { ...d_old } : getEmptyArc(label, oldData);
+        let to = d ? { ...d } : getEmptyArc(label, pieData);
+
+        if (sameArc(from, to)) return null;
+
+        let angleInterpolator = d3.interpolate(from, to);
+
+        return {
+            d,
+            d_old,
+            from,
+            to,
+            interpolator: (t) => `path("${arcGenerator(angleInterpolator(t))}")`,
+            type: d ? (d_old ? "update" : "in") : "out",
+        };
+    }
+
+    function sameArc(arc1, arc2) {
+        if (!arc1 && !arc2) return true;
+        if (!arc1 || !arc2) return false;
+        return arc1.startAngle === arc2.startAngle && arc1.endAngle === arc2.endAngle;
+    }
+
+    function arc(wedge) {
+        let transition = transitionArc(wedge);
+        if (!transition) return { duration: 0, css: "" };
+
+        return {
+            duration: transitionDuration,
+            easing: d3.easeCubic,
+            css: (t, u) =>
+                `d: ${transition.interpolator(
+                    transition.type === "out" ? u : t
+                )}`,
+        };
+    }
+
+    function getEmptyArc(label, data = pieData) {
+        let labels = d3.sort(new Set([...oldData, ...pieData].map((d) => d.label)));
+        let labelIndex = labels.indexOf(label);
+        let sibling;
+        for (let i = labelIndex - 1; i >= 0; i--) {
+            sibling = data.find((d) => d.label === labels[i]);
+            if (sibling) break;
+        }
+        let angle = sibling?.endAngle ?? 0;
+        return { startAngle: angle, endAngle: angle };
+    }
+
 </script>
 
 <div class="container">
     <svg viewBox="-50 -50 100 100">
-        {#each arcs as arc, i}
+        {#each pieData as d, i (d.label)}
             <path 
+                bind:this={wedges[d.label]}
+                transition:arc
                 id="path-{i}"
-                d={arc} 
-                fill={colors(i)}
+                d={d.arc}
+                fill={colors(d.id ?? d.label)}
                 class:selected={selectedIndex === i}
                 tabindex="0"
                 role="button"
@@ -54,18 +152,18 @@
                 on:focus={() => handleMouseEnter(i)}
                 on:blur={handleMouseLeave}
                 style="
-                    --start-angle: { arcData[i]?.startAngle }rad;
-                    --end-angle: { arcData[i]?.endAngle }rad;
+                    --start-angle: { d.startAngle }rad; 
+                    --end-angle: { d.endAngle }rad;
                 "
             />
         {/each}
     </svg>
 
     <ul class="legend">
-        {#each data as d, i}
+        {#each pieData as d, i}
         <li 
             class:selected={selectedIndex === i}
-            style="--color: {colors(i)}"
+            style="--color: {colors(d.id ?? d.label)}"
             on:click={() => toggleWedge(i)}
         >
             <span class="swatch"></span>
@@ -102,7 +200,8 @@
     }
 
     path {
-        transition: transform 300ms, opacity 300ms;
+        transition: transform, opacity, fill 300ms;
+        transition-property: transform, opacity, fill;
         cursor: pointer;
         outline: none;
         --angle: calc(var(--end-angle) - var(--start-angle));
@@ -134,7 +233,7 @@
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(9em, 1fr));
         padding: 1em;
-        margin: 1em 0;
+        margin: 1em;
         border: 1px solid #ccc;
         border-radius: 8px;
         background-color: #f9f9f9;

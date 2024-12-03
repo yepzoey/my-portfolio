@@ -13,7 +13,7 @@
 <div class="image-container">
     <img src="images/tangy.jpg" alt="A photo of my little orange cat named Tangy" width="300" height="400">
 </div>
-<p>This is my portfolio website for my Lab 5 submission!</p>
+<p>This is my portfolio website for my Lab 9 submission!</p>
 
 {#await profileData}
   <p>Loading...</p>

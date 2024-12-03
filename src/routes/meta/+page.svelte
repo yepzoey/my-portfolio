@@ -5,17 +5,23 @@
 <script>
     import * as d3 from 'd3';
     import { onMount } from 'svelte';
-    import { computePosition, autoPlacement, offset } from '@floating-ui/dom';
     import Pie from '$lib/Pie.svelte';
+    import Scatterplot from './Scatterplot.svelte';
+    import FileLines from './FileLines.svelte';
+    import Scrolly from 'svelte-scrolly';
 
+    let files = [];
     let data = [];
     let commits = [];
+    let selectedCommits = [];
+    let filteredLines = [];
+    let colors = d3.scaleOrdinal(d3.schemeTableau10);
+
     let numFiles = 0;
     let averageFileLength = 0;
     let averageLineLength = 0;
     let maxDepth = 0;
-    let svg;
-    let brushSelection;
+    let raceProgress = 0;
 
     let width = 1000,
         height = 600;
@@ -29,14 +35,36 @@
     };
     usableArea.width = usableArea.right - usableArea.left;
     usableArea.height = usableArea.bottom - usableArea.top;
-    
-    let xScale, yScale, colorScale, rScale;
-    let xAxis, yAxis, yAxisGridlines;
 
-    let hoveredIndex = -1;
+    let rScale;
 
-    let commitTooltip;
-    let tooltipPosition = { x: 0, y: 0 };
+    let commitProgress = 100;
+
+    let timeScale;
+    $: commitMaxTime = timeScale ? timeScale.invert(commitProgress) : null;
+
+    $: filteredCommits = commitMaxTime
+        ? commits.filter(commit => commit.datetime <= commitMaxTime)
+        : commits;
+
+    $: filteredLines = filteredCommits.flatMap(commit => commit.lines);
+
+    $: files = d3.groups(data, (d) => d.file).map(([name, lines]) => ({
+        name,
+        lines,
+        lastModified: d3.max(lines, (line) => line.datetime),
+    }));
+
+    let fileTimeScale;
+    $: fileTimeScale = d3.scaleTime()
+        .domain(d3.extent(files, (file) => file.lastModified))
+        .range([0, 100]);
+
+    $: raceMaxTime = timeScale ? timeScale.invert(raceProgress) : null;
+
+    $: filteredFiles = raceMaxTime
+        ? files.filter(file => file.lastModified <= raceMaxTime)
+        : files;
 
     onMount(async () => {
         data = await d3.csv('loc.csv', (row) => ({
@@ -86,79 +114,14 @@
         rScale = d3.scaleSqrt()
             .domain([minLines, maxLines])
             .range([2, 30]);
+
+        const [minDate, maxDate] = d3.extent(commits, d => d.datetime);
+        timeScale = d3.scaleTime()
+            .domain([minDate, maxDate])
+            .range([0, 100]);
     });
 
-    $: hoveredCommit = commits[hoveredIndex] ?? hoveredCommit ?? {};
-
-    $: if (commits.length) {
-        xScale = d3.scaleTime()
-            .domain(d3.extent(commits, d => d.datetime))
-            .range([usableArea.left, usableArea.right])
-            .nice();
-
-        yScale = d3.scaleLinear()
-            .domain([0, 24])
-            .range([usableArea.bottom, usableArea.top])
-            .nice();
-
-        colorScale = d3.scaleSequential(d3.interpolatePlasma)
-            .domain([24, 0]);
-    }
-
-    $: if (xScale && yScale) {
-        d3.select(xAxis).call(d3.axisBottom(xScale));
-        d3.select(yAxis).call(
-            d3
-                .axisLeft(yScale)
-                .tickFormat(d => String(d % 24).padStart(2, '0') + ':00')
-        );
-        d3.select(yAxisGridlines).call(
-            d3.axisLeft(yScale).tickFormat('').tickSize(-usableArea.width)
-        );
-    }
-
-    async function dotInteraction(index, evt) {
-        if (evt.type === 'mouseenter' || evt.type === 'focus') {
-            hoveredIndex = index;
-            let hoveredDot = evt.target;
-
-            tooltipPosition = await computePosition(hoveredDot, commitTooltip, {
-                strategy: 'fixed',
-                middleware: [
-                    offset(5),
-                    autoPlacement()
-                ]
-            });
-        } else if (evt.type === 'mouseleave' || evt.type === 'blur') {
-            hoveredIndex = -1;
-        }
-    }
-
-    $: {
-        d3.select(svg).call(d3.brush().on('start brush end', brushed));
-    }
-
-    $: {
-        const brush = d3.brush().on('start brush end', brushed);
-        d3.select(svg).call(brush);
-        d3.select(svg).selectAll('.dots, .overlay ~ *').raise();
-    }
-
-    function brushed(evt) {
-        brushSelection = evt.selection;
-    }
-
-    function isCommitSelected(commit) {
-        if (!brushSelection) return false;
-        const [x0, y0] = brushSelection[0];
-        const [x1, y1] = brushSelection[1];
-        const x = xScale(commit.datetime);
-        const y = yScale(commit.hourFrac);
-        return x0 <= x && x <= x1 && y0 <= y && y <= y1;
-    }
-
-    $: selectedCommits = brushSelection ? commits.filter(isCommitSelected) : [];
-    $: hasSelection = brushSelection && selectedCommits.length > 0;
+    $: hasSelection = selectedCommits.length > 0;
 
     $: selectedLines = (hasSelection ? selectedCommits : commits).flatMap(
         (d) => d.lines,
@@ -177,23 +140,26 @@
         html: "HTML"
     };
 
-    $: pieData = Array.from(languageBreakdown).map(([language, lines]) => ({
-        label: languageMap[language] || language,
+    $: pieData = Array.from(languageBreakdown).map(([id, lines]) => ({
+        id,
+        label: languageMap[id],
         value: lines
     }));
 
 </script>
 
 <h1>Meta</h1>
+<p>
+    This page includes stats about the code of this website. It's a fun way to explore the codebase and see how it has evolved over time.
+</p>
 
 <section>
-    <h2>Summary</h2>
     <dl class="stats">
         <dt>Total Commits</dt>
-        <dd>{commits.length}</dd>
+        <dd>{filteredCommits.length}</dd>
 
         <dt>Total <abbr title="Lines of Code">LOC</abbr></dt>
-        <dd>{data.length}</dd>
+        <dd>{filteredLines.length}</dd>
 
         <dt>Files</dt>
         <dd>{numFiles}</dd>
@@ -209,141 +175,91 @@
     </dl>
 </section>
 
-<h2>Commits by Time of Day</h2>
-<svg viewBox="0 0 {width} {height}" bind:this={svg}>
-    <g class="gridlines">
-        {#if yScale && colorScale}
-            {#each [...Array(25).keys()] as hour}
-                <line
-                    x1="{usableArea.left}" x2="{usableArea.right}"
-                    y1="{yScale(hour)}" y2="{yScale(hour)}"
-                    stroke="{colorScale(hour)}"
-                    stroke-width="0.5"
-                />
-            {/each}
-        {/if}
-    </g>    
-    <g transform="translate(0, {usableArea.bottom})" bind:this="{xAxis}" />
-    <g transform="translate({usableArea.left}, 0)" bind:this="{yAxis}" />
-    <g class="dots">
-        {#each commits as commit, index}
-            <circle
-                cx="{xScale(commit.datetime)}"
-                cy="{yScale(commit.hourFrac)}"
-                r="{rScale(commit.totalLines)}"
-                fill="steelblue"
-                fill-opacity={hoveredIndex === index ? 1 : 0.7}
-                tabindex="0"
-                aria-describedby="commit-tooltip"
-                aria-haspopup="true"
-                on:mouseenter={evt => dotInteraction(index, evt)}
-                on:mouseleave={evt => dotInteraction(index, evt)}
-                on:focus={evt => dotInteraction(index, evt)}
-                on:blur={evt => dotInteraction(index, evt)}
-                class:selected={isCommitSelected(commit)}
-            />
-        {/each}
-    </g>
-</svg>
+<div class="scroll-date">
+    {commitMaxTime?.toLocaleDateString("en", { dateStyle: "medium" })}
+</div>
 
-<dl id="commit-tooltip" class="info tooltip" bind:this="{commitTooltip}" hidden={hoveredIndex === -1} style="top: {tooltipPosition.y}px; left: {tooltipPosition.x}px">
-    <dt>Commit</dt>
-    <dd><a href="{hoveredCommit.url}" target="_blank">{hoveredCommit.id}</a></dd>
-    
-    <dt>Author</dt>
-    <dd>{hoveredCommit.author}</dd>
+{#if commits.length}
+<Scrolly bind:progress={commitProgress}>
+    <h2>Evolution Over Time</h2>
+    {#each commits as commit, index}
+        <p>
+            On {commit.datetime.toLocaleString("en", { dateStyle: "full", timeStyle: "short" })},
+            I made <a href="{commit.url}" target="_blank">{index > 0 ? 'another glorious commit' : 'my first commit, and it was glorious'}</a>.
+            I edited {commit.totalLines} lines across {d3.rollups(commit.lines, (d) => d.length, (d) => d.file).length} files.
+            Then I looked over all I had made, and I saw that it was very good.
+        </p>
+    {/each}
 
-    <dt>Date</dt>
-    <dd>{hoveredCommit.datetime?.toLocaleString("en", { dateStyle: "full" })}</dd>
+    <svelte:fragment slot="viz">
+        <h2>Commits by Time of Day</h2>
+        <Scatterplot
+            commits={filteredCommits}
+            bind:selectedCommits={selectedCommits}
+        />
 
-    <dt>Time</dt>
-    <dd>{hoveredCommit.datetime?.toLocaleTimeString("en", { timeStyle: "short" })}</dd>
+        <p>{hasSelection ? selectedCommits.length : "No"} commits selected</p>
+        <Pie data={pieData} colors={colors} />
+    </svelte:fragment>
+</Scrolly>
+{/if}
 
-    <dt>Lines</dt>
-    <dd>{hoveredCommit.totalLines}</dd>
-</dl>
+{#if files.length}
+<Scrolly bind:progress={raceProgress} --scrolly-layout="viz-first" --scrolly-viz-width="1.5fr">
+    {#each files as file, index}
+        <p>
+            File: {file.name} contains {file.lines.length} lines of code. 
+            <a href="#">More details about this file.</a>
+        </p>
+    {/each}
 
-<p>{hasSelection ? selectedCommits.length : "No"} commits selected</p>
-<Pie data={pieData} />
+    <svelte:fragment slot="viz">
+        <h2>Codebase Evolution</h2>
+        <FileLines lines={filteredLines} colors={colors} />
+    </svelte:fragment>
+</Scrolly>
+{/if}
 
 <style>
-    svg {
-        overflow: visible;
-        margin-top: 1.5rem;
-    }
-    .gridlines {
-        stroke-opacity: 0.6;
-    }
-    dl.info {
-        display: grid;
-        grid-template-columns: auto 1fr;
-        margin: 0;
-        column-gap: 1em;
-        row-gap: 0.2em;
+    :global(body) {
+        max-width: min(120ch, 80vw);
     }
 
-    dl.info dt {
-        font-size: 0.75em;
-        color: #666;
-        text-transform: uppercase;
-        align-self: center;
-        margin: 0;
-        grid-column: 1;
-        grid-row: auto;
-        text-align: end;
-    }
-
-    dl.info dd {
-        font-size: 0.85em;
-        margin: 0;
-        font-weight: normal;
-        color: #000;
-        align-self: center;
-        grid-column: 2;
-        grid-row: auto;
-    }
-    .tooltip {
+    .scroll-date {
         position: fixed;
-        top: 1em;
-        left: 1em;
-        background-color: rgba(250, 250, 250, 0.9);
-        border-radius: 8px;
-        border: 1px solid #ffffff;
-        box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
-        padding: 1em;
-        backdrop-filter: blur(4px);
-        transition: opacity 500ms, visibility 500ms;
-        pointer-events: none;
-        transition-duration: 500ms;
-        transition-property: opacity, visibility;
-    }
-    .tooltip[hidden]:not(:hover, :focus-within) {
-        opacity: 0;
-        visibility: hidden;
-    }
-    circle {
-        transition: 200ms;
-        transform-origin: center;
-        transform-box: fill-box;
-    }
-    circle:hover {
-        transform: scale(1.5);
-    }
-    circle.selected {
-        fill: rgb(255, 183, 154);
-    }
-    @keyframes marching-ants {
-        to {
-            stroke-dashoffset: -8;
-        }
+        top: 90%;
+        right: 1rem;
+        transform: translateY(-50%);
+        font-size: 0.9em;
+        background: rgba(255, 255, 255, 0.8);
+        padding: 0.2rem 0.5rem;
+        border-radius: 0.25rem;
+        box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
     }
 
-    svg :global(.selection) {
-        fill-opacity: 10%;
-        stroke: black;
-        stroke-opacity: 70%;
-        stroke-dasharray: 5 3;
-        animation: marching-ants 2s linear infinite;
+    .filtering {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5em;
+    }
+
+    .slider-row {
+        display: flex;
+        align-items: center;
+        gap: 1em;
+    }
+
+    .slider-row label {
+        white-space: nowrap;
+    }
+
+    .slider-row input[type="range"] {
+        flex: 1;
+    }
+
+    .filtering time {
+        align-self: flex-end;
+        font-size: 0.9em;
     }
 
 </style>
